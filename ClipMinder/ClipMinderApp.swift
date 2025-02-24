@@ -20,10 +20,11 @@ struct ClipMinderApp: App {
     )
     @State private var keyListener = GlobalKeyListener()
     @State private var pasteboardService = PasteboardServiceImpl()
+    @State private var historyService = HistoryService<PasteboardServiceImpl.Item>()
 
     var body: some Scene {
         MenuBarExtra("ClipMinder", systemImage: "paperclip") {
-            AppMenu()
+            AppMenu(onClear: historyService.clear)
         }
         .menuBarExtraStyle(.menu)
         .onChange(of: keyListener.hotKeyTriggered) { oldValue, newValue in
@@ -34,11 +35,15 @@ struct ClipMinderApp: App {
             }
         }
         .onChange(of: pasteboardService.currentItem) { oldValue, newValue in
-            debugPrint("Received", oldValue, newValue)
+            if oldValue != newValue, let value = newValue {
+                historyService.append(value)
+            }
         }
 
         Window("ClipMinder", id: "main-window") {
-            HistoryView()
+            HistoryView<PasteboardServiceImpl>()
+                .environment(historyService)
+                .environment(KeyPoster(pasteboardService: pasteboardService))
                 .gesture(WindowDragGesture())
         }
         .windowLevel(.floating)

@@ -7,20 +7,17 @@
 
 import Cocoa
 
-final class KeyPoster<T> {
+@Observable
+final class KeyPoster<PS: PasteboardService> {
 
-    private func placeItemIntoPastboard(item: T) {
-        guard let string = item as? String else {
-            fatalError("Unsupported item \(item)")
-        }
+    private let pasteboardService: PS
 
-        let pb = NSPasteboard.general
-        pb.declareTypes([.string], owner: self)
-        pb.setString(string, forType: .string)
+    init(pasteboardService: PS) {
+        self.pasteboardService = pasteboardService
     }
 
-    func postCmdV(item: T) {
-        placeItemIntoPastboard(item: item)
+    func postCmdV(item: PS.Item) {
+        pasteboardService.placeItem(item)
         let source = CGEventSource(stateID: .hidSystemState)
         let key: CGKeyCode = 0x09 // V
         let flags = CGEventFlags.maskCommand

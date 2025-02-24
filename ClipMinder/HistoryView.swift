@@ -7,20 +7,17 @@
 
 import SwiftUI
 
-struct HistoryView: View {
+struct HistoryView<PS: PasteboardService>: View {
 
+    private typealias ItemList = Array<PS.Item>
+
+    @Environment(KeyPoster<PS>.self) private var keyPoster
+    @Environment(HistoryService<PS.Item>.self) private var historyService
     @Environment(\.dismissWindow) private var dismissWindow
     @FocusState private var isFocused: Bool
-    @State private var listSelection: Int = 0
-    private let keyPoster = KeyPoster<String>()
+    @State private var listSelection: ItemList.Index = ItemList.Index.zero
 
-    private let list = [
-        "Hello",
-        "This",
-        "Is",
-        "Sample",
-        "List"
-    ]
+    private var list: ItemList { historyService.items }
 
     private func closeWindow() {
         NSApp.hide(self)
@@ -28,12 +25,15 @@ struct HistoryView: View {
     }
 
     @MainActor private func nextSelection() {
+        guard !list.isEmpty else { return }
         listSelection = (listSelection + 1) % list.count
     }
 
     @MainActor private func prevSelection() {
+        guard !list.isEmpty else { return }
         listSelection = listSelection == 0 ? list.count - 1 : listSelection - 1
     }
+
     var body: some View {
         List(selection: $listSelection) {
             ForEach(list.indices, id: \.self) { index in
@@ -59,5 +59,14 @@ struct HistoryView: View {
         }
         .onAppear { isFocused = true }
         .onDisappear { isFocused = false }
+        .overlay {
+            if list.isEmpty {
+                ContentUnavailableView(
+                    "Nothing here",
+                    systemImage: "arrow.trianglehead.2.clockwise.rotate.90.page.on.clipboard",
+                    description: Text("No pasteboard items available yet")
+                )
+            }
+        }
     }
 }

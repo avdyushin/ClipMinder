@@ -6,7 +6,7 @@
 //
 
 protocol PasteboardService {
-    associatedtype Item
+    associatedtype Item: SupportedEntity
     var currentItem: Item? { get }
     func placeItem(_ item: Item)
 }

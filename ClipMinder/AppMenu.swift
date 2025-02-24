@@ -8,10 +8,14 @@
 import SwiftUI
 
 struct AppMenu: View {
+    let onClear: () -> Void
+
     var body: some View {
         VStack {
             SettingsLink()
                 .keyboardShortcut(",", modifiers: [.command])
+            Button("Clear", action: onClear)
+                .keyboardShortcut("c", modifiers: [.option])
             Divider()
             Button("Quit") {
                 NSApplication.shared.terminate(nil)
@@ -21,5 +25,5 @@ struct AppMenu: View {
 }
 
 #Preview {
-    AppMenu()
+    AppMenu { }
 }
