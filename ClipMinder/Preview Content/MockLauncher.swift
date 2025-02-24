@@ -9,9 +9,15 @@
 import SwiftUI
 import ServiceManagement
 
+
+
 struct MockLauncher: PreviewModifier {
     static func makeSharedContext() async throws -> AppSettings {
-        AppSettings(service: AppLaunchServiceImpl())
+        AppSettings(
+            launch: AppLaunchServiceMock(),
+            permissionsListen: AppPermissionsServiceMock(),
+            permissionsPost: AppPermissionsServiceMock()
+        )
     }
 
     func body(content: Content, context: AppSettings) -> some View {

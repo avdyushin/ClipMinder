@@ -5,13 +5,13 @@
 //  Created by Grigory Avdyushin   on 08/02/2025.
 //
 
-import SwiftUI
-import ServiceManagement
-
-private final class AppSettingsMock: AppSettingsProtocol {
-    var launchAtLogin: Bool = true
+final class AppLaunchServiceMock: AppLaunchService {
+    var launchAtLogin: Bool = true {
+        didSet {
+            debugPrint("Did set launchAtLogin to", launchAtLogin)
+        }
+    }
     func toggleLaunchAtLogin(isLaunchAtLogin: Bool) {
         launchAtLogin = isLaunchAtLogin
     }
-    func verifyLaunchAtLogin() {}
 }
