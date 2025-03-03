@@ -20,7 +20,7 @@ struct ClipMinderApp: App {
     )
     @State private var keyListener = GlobalKeyListener()
     @State private var pasteboardService = PasteboardServiceImpl()
-    @State private var historyService = HistoryService<PasteboardServiceImpl.Item>()
+    @State private var historyService = HistoryService(storage: LocalStorage<StringEntity>())
 
     var body: some Scene {
         MenuBarExtra("ClipMinder", systemImage: "paperclip") {
@@ -41,7 +41,7 @@ struct ClipMinderApp: App {
         }
 
         Window("ClipMinder", id: "main-window") {
-            HistoryView<PasteboardServiceImpl>()
+            HistoryView<PasteboardServiceImpl, LocalStorage<StringEntity>>()
                 .environment(historyService)
                 .environment(KeyPoster(pasteboardService: pasteboardService))
                 .gesture(WindowDragGesture())

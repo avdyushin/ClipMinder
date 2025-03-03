@@ -9,46 +9,15 @@
 import Foundation
 
 @Observable
-final class HistoryService<Item: SupportedEntity>: Storage {
+final class HistoryService<S: Storage> {
 
-    var items = [Item]()
-    var count: Int { items.count }
+    private var storage: S
+    var items: [S.Item] { storage.items }
 
-    subscript(index: Int) -> Item? {
-        guard items.indices ~= index else {
-            return nil
-        }
-        return items[index]
+    init(storage: S) {
+        self.storage = storage
     }
 
-    func append(_ item: Item) {
-        if let index = items.firstIndex(where: { $0.value == item.value }) {
-            move(fromIndex: index, toIndex: 0)
-        } else {
-            items.insert(item, at: 0)
-        }
-        // check limit
-        try? save()
-    }
-
-    func move(fromIndex: Int, toIndex: Int) {
-        if var item = self[fromIndex] {
-            item.updateTimestamp(timestamp: Date())
-        }
-        items.move(fromOffsets: IndexSet(integer: fromIndex), toOffset: toIndex)
-    }
-
-    func clear() {
-        items = []
-        try? save()
-    }
-
-    func save() throws {
-        debugPrint("Saved \(items)")
-    }
-
-    func load() throws {
-        items = []
-        debugPrint("Loaded")
-    }
+    func clear() { storage.clear() }
+    func append(_ item: S.Item) { storage.append(item) }
 }

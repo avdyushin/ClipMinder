@@ -1,17 +1,14 @@
 //
-//  MockLauncher.swift
+//  MockAppSettings.swift
 //  ClipMinder
 //
 //  Created by Grigory Avdyushin   on 08/02/2025.
 //
 
-
 import SwiftUI
 import ServiceManagement
 
-
-
-struct MockLauncher: PreviewModifier {
+struct MockAppSettings: PreviewModifier {
     static func makeSharedContext() async throws -> AppSettings {
         AppSettings(
             launch: AppLaunchServiceMock(),
@@ -24,4 +21,8 @@ struct MockLauncher: PreviewModifier {
         content
             .environment(context)
     }
+}
+
+extension PreviewTrait {
+    static var withMockSettings: PreviewTrait<Preview.ViewTraits> { .modifier(MockAppSettings()) }
 }

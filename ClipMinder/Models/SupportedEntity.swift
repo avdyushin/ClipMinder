@@ -11,4 +11,5 @@ import Foundation
 protocol SupportedEntity: PasteboardEntity {
     associatedtype Item: Equatable
     var value: Item { get }
+    var createdAt: Date { get }
 }

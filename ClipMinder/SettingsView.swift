@@ -122,6 +122,6 @@ struct SettingsView: View {
     }
 }
 
-#Preview(traits: .modifier(MockLauncher())) {
+#Preview(traits: .withMockSettings) {
     SettingsView()
 }

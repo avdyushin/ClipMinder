@@ -16,20 +16,18 @@ final class GlobalKeyListener {
     init() {
         let callback: CGEventTapCallBack = { (proxy, type, event, info) -> Unmanaged<CGEvent>? in
             guard let rawValue = UserDefaults.standard.string(forKey: "hot_key") else {
-                debugPrint("No hot key!")
+                debugPrint("No hot key is defined, check settings!")
                 return .passUnretained(event)
             }
             let hotKey = HotKey(rawValue: rawValue)
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let modifiers = event.flags.toEventModifiers()
             if keyCode == hotKey.keyCode, modifiers == hotKey.modifiers {
-//                debugPrint("BINGO!!!!")
                 if let info {
                     Unmanaged<GlobalKeyListener>.fromOpaque(info).takeUnretainedValue().hotKeyTriggered = true
+                    return nil
                 }
             }
-//            debugPrint("event received", event, keyCode, modifiers.toHotKeyPrefix)
-//            debugPrint("expected", hotKey.keyCode, hotKey.modifiers.toHotKeyPrefix)
             return .passUnretained(event)
         }
         let userInfo = Unmanaged.passRetained(self).toOpaque()
@@ -43,7 +41,7 @@ final class GlobalKeyListener {
         )
         guard let eventTap else {
             Unmanaged<GlobalKeyListener>.fromOpaque(userInfo).release()
-            debugPrint("Can't create event")
+            debugPrint("Can't create <CGEvent.tapCreate>!")
             return
         }
         let runLoop = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
