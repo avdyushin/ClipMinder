@@ -15,6 +15,7 @@ protocol Storage {
     subscript(_ index: Int) -> Item? { get }
     mutating func append(_ item: Item)
     mutating func move(fromIndex: Int, toIndex: Int)
+    mutating func remove(atIndex: Int)
     mutating func clear()
     mutating func load() throws
     func save() throws

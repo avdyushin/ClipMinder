@@ -45,6 +45,14 @@ struct LocalStorage<Item: SupportedEntity>: Storage {
         items.move(fromOffsets: IndexSet(integer: fromIndex), toOffset: toIndex)
     }
 
+    mutating func remove(atIndex: Int) {
+        guard items.indices ~= atIndex else {
+            return
+        }
+        items.remove(at: atIndex)
+        try? save()
+    }
+
     mutating func clear() {
         items = []
         try? save()

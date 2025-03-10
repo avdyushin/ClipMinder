@@ -60,7 +60,7 @@ struct HistoryView<P: PasteboardService, S: Storage>: View where P.Item == S.Ite
             List(selection: $listSelection) {
                 ForEach(list.indices, id: \.self) { index in
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(index). \(list[index])")
+                        Text("\(list[index])")
                             .padding(4)
                             .lineLimit(2)
                         HStack {
@@ -79,11 +79,21 @@ struct HistoryView<P: PasteboardService, S: Storage>: View where P.Item == S.Ite
                 switch event.key {
                 case "h", "k", .upArrow, .leftArrow: prevSelection()
                 case "j", "l", .downArrow, .rightArrow: nextSelection()
-                case .return:
-                    Task {
-                        // try await Task.sleep(nanoseconds: 500_000_000)
-                        keyPoster.postCmdV(item: list[listSelection])
+                case .backspace: Task {
+                    historyService.remove(at: listSelection)
+                    switch list.count {
+                    case 1: listSelection = 0
+                    default:
+                        switch listSelection {
+                        case list.count: listSelection -= 1
+                        default: listSelection += 1
+                        }
                     }
+                }
+                case .return: Task {
+                    // try await Task.sleep(nanoseconds: 500_000_000)
+                    keyPoster.postCmdV(item: list[listSelection])
+                }
                     fallthrough
                 case .escape: closeWindow()
                 default: ()
@@ -112,9 +122,14 @@ struct HistoryView<P: PasteboardService, S: Storage>: View where P.Item == S.Ite
                     systemImage: "arrow.trianglehead.2.clockwise.rotate.90.page.on.clipboard",
                     description: Text("No pasteboard items available yet")
                 )
+                .ignoresSafeArea()
             }
         }
     }
+}
+
+fileprivate extension KeyEquivalent {
+    static let backspace = KeyEquivalent("\u{7F}")
 }
 
 #Preview {

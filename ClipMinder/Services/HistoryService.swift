@@ -20,4 +20,5 @@ final class HistoryService<S: Storage> {
 
     func clear() { storage.clear() }
     func append(_ item: S.Item) { storage.append(item) }
+    func remove(at index: [S.Item].Index) { storage.remove(atIndex: index) }
 }

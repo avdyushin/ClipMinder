@@ -36,7 +36,14 @@ final class MockStorage: Storage {
 
     func move(fromIndex: Int, toIndex: Int) {
     }
-    
+
+    func remove(atIndex: Int) {
+        guard items.indices ~= atIndex else {
+            return
+        }
+        items.remove(at: atIndex)
+    }
+
     func clear() {
         items.removeAll()
     }
