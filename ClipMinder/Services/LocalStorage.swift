@@ -5,7 +5,6 @@
 //  Created by Grigory Avdyushin   on 03/03/2025.
 //
 
-
 import Foundation
 
 struct LocalStorage<Item: SupportedEntity>: Storage {
