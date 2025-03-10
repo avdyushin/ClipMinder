@@ -10,8 +10,16 @@ import Foundation
 
 struct LocalStorage<Item: SupportedEntity>: Storage {
 
+    private let storageKey = "HistoryStorage"
+    private let encoder = JSONEncoder()
+    private let defaults = UserDefaults.standard
+
     var items = [Item]()
     var count: Int { items.count }
+
+    init() {
+        try? load()
+    }
 
     subscript(index: Int) -> Item? {
         guard items.indices ~= index else {
@@ -43,11 +51,15 @@ struct LocalStorage<Item: SupportedEntity>: Storage {
     }
 
     func save() throws {
-        debugPrint("Saved \(items)")
+        let encoded = try encoder.encode(items)
+        defaults.set(encoded, forKey: storageKey)
     }
 
     mutating func load() throws {
-        items = []
-        debugPrint("Loaded")
+        guard let stored = defaults.object(forKey: storageKey) as? Data,
+              let decoded = try? JSONDecoder().decode([Item].self, from: stored) else {
+                  return
+        }
+        items = decoded
     }
 }
