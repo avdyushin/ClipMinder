@@ -48,81 +48,76 @@ struct HistoryView<P: PasteboardService, S: Storage>: View where P.Item == S.Ite
         listSelection = listSelection == 0 ? list.count - 1 : listSelection - 1
     }
 
-    private let formatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter
-    }()
+    private func fixWindowButtons() {
+        // Ugly hack to fix 'floating' window
+        if let window = NSApp.windows.first(where: { $0.title == "ClipMinder" }) {
+            let buttons: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
+            buttons.forEach {
+                window.standardWindowButton($0)?.isHidden = true
+            }
+        }
+    }
+
+    private func keyPressHandler(event: KeyPress) -> KeyPress.Result {
+        switch event.key {
+        case "h", "k", .upArrow, .leftArrow: prevSelection()
+        case "j", "l", .downArrow, .rightArrow: nextSelection()
+        case .backspace: Task {
+            historyService.remove(at: listSelection)
+            switch list.count {
+            case 1: listSelection = 0
+            default:
+                switch listSelection {
+                case list.count: listSelection -= 1
+                default: ()
+                }
+            }
+        }
+        case .return: Task {
+            // try await Task.sleep(nanoseconds: 500_000_000)
+            keyPoster.postCmdV(item: list[listSelection])
+        }
+            fallthrough
+        case .escape: closeWindow()
+        default: ()
+        }
+        return KeyPress.Result.handled
+    }
 
     var body: some View {
         ScrollViewReader { scrollViewProxy in
             Scroller(selection: $listSelection, proxy: scrollViewProxy)
             List(selection: $listSelection) {
                 ForEach(list.indices, id: \.self) { index in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("\(list[index])")
-                            .padding(4)
-                            .lineLimit(2)
-                        HStack {
-                            Spacer()
-                            Text(formatter.localizedString(for: list[index].createdAt, relativeTo: Date.now))
-                                .foregroundStyle(.tertiary)
-                        }
-                    }
-                    .tag(index)
-                    .id(index)
+                    ItemRow(item: list[index], isSelected: index == listSelection)
+                        .tag(index)
+                        .id(index)
+                        .alignmentGuide(.listRowSeparatorLeading) { dim in -20 }
+                        .padding(4)
                 }
             }
+            .scrollIndicators(.never, axes: [.vertical])
+            .listStyle(.plain)
             .focusable()
             .focused($isFocused)
-            .onKeyPress(phases: [.down, .repeat]) { event in
-                switch event.key {
-                case "h", "k", .upArrow, .leftArrow: prevSelection()
-                case "j", "l", .downArrow, .rightArrow: nextSelection()
-                case .backspace: Task {
-                    historyService.remove(at: listSelection)
-                    switch list.count {
-                    case 1: listSelection = 0
-                    default:
-                        switch listSelection {
-                        case list.count: listSelection -= 1
-                        default: listSelection += 1
-                        }
-                    }
-                }
-                case .return: Task {
-                    // try await Task.sleep(nanoseconds: 500_000_000)
-                    keyPoster.postCmdV(item: list[listSelection])
-                }
-                    fallthrough
-                case .escape: closeWindow()
-                default: ()
-                }
-                return KeyPress.Result.handled
-            }
-        }
-        .onAppear {
-            // Ugly hack to fix 'floating' window
-            if let window = NSApp.windows.first(where: { $0.title == "ClipMinder" }) {
-                let buttons: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
-                buttons.forEach {
-                    window.standardWindowButton($0)?.isHidden = true
-                }
-            }
-
-            listSelection = 0
-            isFocused = true
+            .onKeyPress(phases: [.down, .repeat], action: keyPressHandler)
         }
         .ignoresSafeArea()
-        .onDisappear { isFocused = false }
+        .onAppear {
+            isFocused = true
+            listSelection = 0
+            fixWindowButtons()
+        }
+        .onDisappear {
+            isFocused = false
+        }
         .overlay {
             if list.isEmpty {
                 ContentUnavailableView(
                     "Nothing here",
-                    systemImage: "arrow.trianglehead.2.clockwise.rotate.90.page.on.clipboard",
+                    systemImage: "text.page.slash",
                     description: Text("No pasteboard items available yet")
                 )
-                .ignoresSafeArea()
             }
         }
     }
