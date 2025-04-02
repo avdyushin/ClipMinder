@@ -121,7 +121,3 @@ struct SettingsView: View {
         }
     }
 }
-
-#Preview(traits: .withMockSettings) {
-    SettingsView()
-}

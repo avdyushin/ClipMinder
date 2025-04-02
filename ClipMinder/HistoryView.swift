@@ -126,15 +126,3 @@ struct HistoryView<P: PasteboardService, S: Storage>: View where P.Item == S.Ite
 fileprivate extension KeyEquivalent {
     static let backspace = KeyEquivalent("\u{7F}")
 }
-
-#Preview {
-    @Previewable @State var storage = MockStorage()
-    Group {
-        HistoryView<PasteboardServiceMock, MockStorage>()
-            .environment(HistoryService(storage: storage))
-            .environment(KeyPoster(pasteboardService: PasteboardServiceMock()))
-        Button("Add item") {
-            storage.append(StringEntity("Surprise"))
-        }
-    }
-}
